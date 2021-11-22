@@ -1,6 +1,6 @@
 import csv
 import queue
-
+import math
 from Building import *
 import json
 from Elevator import *
@@ -123,6 +123,7 @@ class Allocate:
                             myTime = max(elv.waitingDown[currStopsInx - 1].actualTime,
                                          elv.waitingDown[currStopsInx - 1].callTime)
                             myTime += elv.tag + elv.speed * (call.src - elv.waitingDown[currStopsInx - 1].floor)
+                            #the list contains: elevIndex, the real time to call src , down=-1.
                             tup = [elv.id, myTime, -1]
                             tempEvTime.append(tup)
                             # end the while
@@ -139,27 +140,69 @@ class Allocate:
         elif (minTime[2] == -1):
             self.building.elevators[minTime[0]].addToWaitingDown(call, minTime[1])
 
-        # for elv in self.building.elevators:
-        #     # both up and in the way
-        #     if (elv.flag == UP and call.src < call.dest and elv.currStops[0] < call.src):
-        #         for floor in elv.currStops:
-        #             if (floor < call.src):
-        #                 continue
-        #             else:
-        #                 break
+        #call to function which update the lists of the chosen elevator
+        listsUpdate (minTime[0])
 
-            # we need to put the actual call in the elev
+
         return fastesElev
 
+    # function which update all the elevators lists----------missing code!
+    def listsUpdate (elvIndex: Elevator):
+        currStopsInx = 0
+        while currStopsInx < (elvIndex.waitingDown.qsize()):
+            if (elvIndex.flag == UP):
+                elvIndex.currStops[currStopsInx][FloorDetailsUp]
+                currStopsInx += 1
+            else:
+            elvIndex.currStops[currStopsInx][FloorDetailsDown()]
+
+
+        #updating the other lists
+        for currStop in elvIndex.waitingDown:
+        for currStop in elvIndex.waitingUp:
+            currStop = max(F)
+
+    #In this method there are 3 goals: 1-update each list times.
+    #2-update the flags and the lists. 3-update the pos and stop in the calls floors
+    #the function run each 0.1 sec and updates the data
     def update(self):
+        #loop all the elevators
         for elv in self.building.elevators:
+            #if the currstops list isEmpty -> change the flag value and update the
+            #currstops list
             if (len(elv.currStops)==0):
                 if (elv.flag == UP):
                     elv.flag = DOWN
-                    elv.currStops = elv.waitingDown
+                    elv.currStops = elv.waitingDown#if it works well
                 else:
                     elv.flag = UP
                     elv.currStops = elv.waitingUp
+
+            #updating the elev pos and the currStops list if we stop
+            #the elv up
+            if (elv.flag==UP):
+                newPos = elv.pos + elv.speed*0.1
+                #
+                if (math.ceil(newPos) - math.ceil(elv.pos) == 0):
+                    elv.pos = newPos
+                else:
+                    if (elv.currStops[0] == math.floor(elv.pos)):
+                        elv.pos = elv.pos = math.floor(elv.pos)
+                        elv.currStops.remove(math.floor(elv.pos))
+                    else:
+                        elv.pos = newPos
+
+            #the elv is down
+            else:
+                newPos = elv.pos - elv.speed*0.1
+                if (math.ceil(newPos) - math.ceil(elv.pos) == 0):
+                    elv.pos=newPos
+                #we changed the begining number of the floor
+                else:
+                    #if we have to stop there
+                    if(elv.currStops[0]==math.ceil(elv.pos)):
+                        elv.pos=math.ceil(elv.pos)
+                        elv.currStops.remove(math.ceil(elv.pos))
 
             # increment the elv to the curr directon
         #   elv.pos = elv.pos + elv.speed*0.1
