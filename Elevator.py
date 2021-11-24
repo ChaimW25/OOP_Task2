@@ -83,11 +83,12 @@ class FloorDetailsUp:
         return self.floor < other.floor
 
 
-class FloorDetailsDown:
-    def __init__(self, _floor, _actualTime=0, _callTime=0):
-        self.floor = _floor
-        self.actualTime = _actualTime
-        self.callTime = _callTime
+class FloorDetailsDown(FloorDetailsUp):
+    # def __init__(self, _floor, _actualTime=0, _callTime=0):
+    #     self.floor = _floor
+    #     self.actualTime = _actualTime
+    #     self.callTime = _callTime
 
+        # override
         def __lt__(self, other):
             return self.floor > other.floor

@@ -19,14 +19,13 @@ class Allocate:
             for line in csv_reader:
                 self.calls.append(Call(line[1], line[2], line[3], line[4], line[5]))
 
-
     def fastes_to_floor(self, call) -> int:
-        tempEvTime = [] #holds the results of each elevator
-        tup = [0, 1000000, 0] #holds the: elevID, the elev time for the call, the flag of the list
+        tempEvTime = []  # holds the results of each elevator
+        tup = [0, 1000000, 0]  # holds the: elevID, the elev time for the call, the flag of the list
         for elv in self.building.elevators:
             # if call UP
             if (call.src < call.dest):
-                tup= self.fastest_to_up_calls(call,elv)
+                tup = self.fastest_to_up_calls(call, elv)
                 tempEvTime.append(tup)
 
             # if call DOWN
@@ -34,11 +33,12 @@ class Allocate:
                 tup = self.fastest_to_down_calls(call, elv)
                 tempEvTime.append(tup)
 
-        minTime = [0,10000,0]
-        #minTime = tempEvTime[0]
-        for tup in tempEvTime:
-            if minTime[1] > tup[1]:
-                minTime = tup
+        minTime = [1000, 10000, 1000]
+        # minTime = tempEvTime[0]
+        for i in tempEvTime:
+            print(i, "  for i in tempEvTime all")
+            if minTime[1] > i[1]:
+                minTime = i
         if (minTime[2] == 0):
             self.building.elevators[minTime[0]].addToCurr(call, minTime[1])
         elif (minTime[2] == 1):
@@ -51,39 +51,56 @@ class Allocate:
 
         return minTime[0]
 
-
-    def fastest_to_up_calls(self, call:Call, elv:Elevator):
+    def fastest_to_up_calls(self, call: Call, elv: Elevator):
         tup = [0, 1000000, 0]  # holds the: elevID, the elev time for the call, the flag of the list
         #     if elv UP
         if (elv.flag == UP):
-            #         if didnt pass -> currStops:
+            # if didnt pass -> currStops:
             if (elv.pos < call.src):
                 currStopsInx = 0
+                if len(elv.currStops) == 0:
+                    myTime = elv.tag + elv.speed * (abs(call.src - elv.pos))
+                    tup = [elv.id, myTime, 0]
+                    return tup
+
                 while currStopsInx < (len(elv.currStops)):
                     if (elv.currStops[currStopsInx].floor < call.src):
                         currStopsInx += 1
                     else:
-                        myTime = max(elv.currStops[currStopsInx].actualTime,
-                                     elv.currStops[currStopsInx].callTime)
-                        myTime += elv.tag + elv.speed * (call.src - elv.currStops[currStopsInx].floor)
+                        myTime = max(elv.currStops[currStopsInx - 1].actualTime,
+                                     elv.currStops[currStopsInx - 1].callTime)
+                        myTime += elv.tag + elv.speed * (call.src - elv.currStops[currStopsInx - 1].floor)
                         tup = [elv.id, myTime, 0]
+                        print("tup = [elv.id, myTime, 1]")
                         return tup
             # else: passed -> WLUp
             else:
                 currStopsInx = 0
+                if len(elv.waitingUp) == 0:
+                    last = elv.currStops[len(elv.currStops) - 1]
+                    myTime = max(last.actualTime, last.callTime)
+                    myTime += elv.tag + elv.speed * (abs(call.src - elv.pos))
+                    tup = [elv.id, myTime, 1]
+                    return tup
                 while currStopsInx < len(elv.waitingUp):
                     if (elv.waitingUp[currStopsInx].floor < call.src):
                         currStopsInx += 1
                     else:
+
                         myTime = max(elv.waitingUp[currStopsInx].actualTime,
                                      elv.waitingUp[currStopsInx].callTime)
                         myTime += elv.tag + elv.speed * (call.src - elv.waitingUp[currStopsInx].floor)
                         tup = [elv.id, myTime, 1]
+                        print("tup = [elv.id, myTime, 1]")
                         return tup
 
 
         # if elv DOWN -> waitingUp
         else:
+            if len(elv.waitingUp) == 0:
+                myTime = elv.tag + elv.speed * (abs(call.src - elv.currStops[-1]))
+                tup = [elv.id, myTime, 1]
+                return tup
             currStopsInx = 0
             while currStopsInx < len(elv.waitingUp):
                 if (elv.waitingUp[currStopsInx].floor > call.src):
@@ -93,13 +110,18 @@ class Allocate:
                                  elv.waitingUp[currStopsInx].callTime)
                     myTime += elv.tag + elv.speed * (call.src - elv.waitingUp[currStopsInx].floor)
                     tup = [elv.id, myTime, 1]
+                    print("tup = [elv.id, myTime, 1]")
                     return tup
 
-    def fastest_to_down_calls(self, call:Call, elv:Elevator):
+    def fastest_to_down_calls(self, call: Call, elv: Elevator):
         # if elv DOWN
         if (elv.flag == DOWN):
             # if didnt pass the call yet -> crrStops
             if (elv.pos > call.src):
+                if len(elv.currStops) == 0:
+                    myTime = elv.tag + elv.speed * (abs(call.src - elv.pos))
+                    tup = [elv.id, myTime, 0]
+                    return tup
                 currStopsInx = 0
                 while currStopsInx < len(elv.currStops):
                     if (elv.currStops[currStopsInx].floor > call.src):
@@ -109,10 +131,15 @@ class Allocate:
                                      elv.currStops[currStopsInx].callTime)
                         myTime += elv.tag + elv.speed * (elv.currStops[currStopsInx].floor - call.src)
                         tup = [elv.id, myTime, 0]
+                        print("tup = [elv.id, myTime, 1]")
                         return tup
 
             # else: passed -> WLDown
             else:
+                if len(elv.waitingDown) == 0:
+                    myTime = elv.tag + elv.speed * (abs(call.src - elv.pos))
+                    tup = [elv.id, myTime, -1]
+                    return tup
                 currStopsInx = 0
                 while currStopsInx < len(elv.waitingDown):
                     if (elv.waitingDown[currStopsInx].floor > call.src):
@@ -122,9 +149,14 @@ class Allocate:
                                      elv.waitingDown[currStopsInx].callTime)
                         myTime += elv.tag + elv.speed * (elv.waitingDown[currStopsInx].floor - call.src)
                         tup = [elv.id, myTime, -1]
+                        print("tup = [elv.id, myTime, 1]")
                         return tup
         # elv down -> WLDown
         else:
+            if len(elv.waitingDown) == 0:
+                myTime = elv.tag + elv.speed * (abs(call.src - elv.pos))
+                tup = [elv.id, myTime, -1]
+                return tup
             currStopsInx = 0
             while currStopsInx < len(elv.waitingDown):
                 if (elv.waitingDown[currStopsInx].floor < call.src):
@@ -135,17 +167,19 @@ class Allocate:
                     myTime += elv.tag + elv.speed * (call.src - elv.waitingDown[currStopsInx].floor)
                     # the list contains: elevIndex, the real time to call src , down=-1.
                     tup = [elv.id, myTime, -1]
+                    print("tup = [elv.id, myTime, 1]")
                     return tup
 
-
-
-    # function which update all the elevators lists----------missing code!
+    # function which update all the elevators lists
     def listsUpdate(self, elvIndex: int):
         elev = self.building.elevators[elvIndex]
         currStopsInx = 0
+        if len(self.building.elevators[elvIndex].currStops) == 0:
+            return
         startTime = max(elev.currStops[0].actualTime, elev.currStops[0].callTime)
         time = 0
         floor = elev.currStops[0].floor
+
         # updating the curr list
         for i in range(1, len(elev.currStops)):  # goes from i=0 to i=currStops.size-2
             #  tags ect
@@ -186,13 +220,14 @@ class Allocate:
                 time += max(timetoNextFloor, elev.waitingDown[i].callTime)
                 elev.waitingDown[i].actualTime = time
 
-        ##################
-        while currStopsInx < (elev.waitingDown.qsize()):
+        # when to insert up and down in currrstops
+        while currStopsInx < (len(elev.waitingDown)):
             if (elev.flag == UP):
-                elev.currStops[currStopsInx][FloorDetailsUp]
+                # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                # elev.currStops[currStopsInx][FloorDetailsUp]
                 currStopsInx += 1
-            else:
-                elev.currStops[currStopsInx][FloorDetailsDown()]
+            # else:
+            # elev.currStops[currStopsInx][FloorDetailsDown()]
 
     # In this method there are 3 goals:
     # 1-update each list times.

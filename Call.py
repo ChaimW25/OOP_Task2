@@ -10,9 +10,3 @@ class Call:
         self.state = int(_state)
         self.elvIndx = int(_elvIndx)
 
-        # def flag(src,dest):
-        # if (self.src>self.dest):
-        #     return DOWN
-        # else:
-        #     return UP
-
