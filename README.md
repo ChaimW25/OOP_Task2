@@ -8,7 +8,9 @@ In fact, the current task focuses mainly on the challenge of assigning a "call" 
 
 ### literature Review:
 https://paradigm.suss.edu.sg/the-smart-elevator-scheduling-algorithm-an-illustration-of-computational-intelligence/
+
 http://www.intertent.co.il/2011/07/elevator-algorithm.html
+
 http://www.csunplugged.org.il/lessons/disk-scheduling/
 
 ### how are Algorithem actully works:
