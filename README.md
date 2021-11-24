@@ -1,6 +1,9 @@
 # Ex1 - OOP COURSE 
 
 
+![RrESULTS](https://user-images.githubusercontent.com/74601548/143299134-c4d5a3e4-d35b-403e-9a96-dbc29aa414ce.png)
+
+
 ## Elevator problem - offline algorithm
 
 In this task the challenge will focus on the offline version of the smart elevator problem that we encounter in the first task - meaning all the readings are given to us in advance, and we are only required to embed each reading in a benevolent manner (so that the rule of waiting for elevators is reduced to a minimum). 
